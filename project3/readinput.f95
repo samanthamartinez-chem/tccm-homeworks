@@ -4,18 +4,19 @@ PROGRAM readfile
 IMPLICIT NONE
 !
 double precision, allocatable :: coord(:,:)
-character(len=2),allocatable:: mass(:)
+double precision, allocatable :: mass(:)
 character(len=100)::input_file
 integer :: Natoms,n
 !
 !----------Execution area-----------
 !Define the name of the file to read
-input_file="h2o.xyz"
+input_file="inp.txt"
 !Call the function to determine the number of atoms
 Natoms=read_Natoms(input_file)
 !Call the subroutine that gets the coordinates and the mass of the atoms
 call read_molecule(input_file,Natoms,coord,mass)
 !We dealocate the matrix and vector
+write(*,*) mass(2),coord(1,1),coord(22,2)
 
 deallocate(coord)
 deallocate(mass)
@@ -39,8 +40,8 @@ subroutine read_molecule(input_file,Natoms,coord,mass)
         integer,intent(in)::Natoms
         integer :: n,i_stat,i,m
         double precision,intent(out),allocatable::coord(:,:)
-        character(len=2),intent(out),allocatable::mass(:)
-        !double precision,intent(out),allocatable::mass(Natoms)
+        !character(len=2),intent(out),allocatable::mass(:)
+        double precision,intent(out),allocatable::mass(:)
         n=Natoms
         m=3
         
@@ -51,9 +52,8 @@ subroutine read_molecule(input_file,Natoms,coord,mass)
                 stop
         end if
         read(*,*)
-        read(*,*)
         do i=1,n
-                read(*,*) mass(i), coord(i,1), coord(i,2), coord(i,3)
+                read(*,*) coord(i,1), coord(i,2), coord(i,3),mass(i)
         end do
 end subroutine read_molecule
 
