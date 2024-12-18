@@ -44,3 +44,5 @@ do i = 1, natoms
 end do
 
 close(16)
+
+end program input
