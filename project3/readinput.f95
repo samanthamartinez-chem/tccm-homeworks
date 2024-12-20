@@ -5,21 +5,42 @@ IMPLICIT NONE
 !
 double precision, allocatable :: coord(:,:)
 double precision, allocatable :: mass(:)
+! Variables for the LJ calculation
+double precision, allocatable :: distance(:,:)
+double precision :: potential_energy
+double precision, parameter :: epsilon=0.0661d0 ! in j/mol
+double precision, parameter :: sigma=0.3345d0 ! in nm
 character(len=100)::input_file
 integer :: Natoms,n
-!
-!----------Execution area-----------
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Execution area!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 !Define the name of the file to read
 input_file="inp.txt"
+
 !Call the function to determine the number of atoms
 Natoms=read_Natoms(input_file)
+
 !Call the subroutine that gets the coordinates and the mass of the atoms
 call read_molecule(input_file,Natoms,coord,mass)
-!We dealocate the matrix and vector
 write(*,*) mass(2),coord(1,1),coord(22,2)
 
+! Alocates memory for the distance matrix 
+call allocate_distance(Natoms, distance)
+
+! Computes the distance and LJ potential energy
+call compute_distance_potential(Natoms, coord, distance, sigma, epsilon, potential_energy)
+
+! To confirm everything ok so far
+write(6,*) "The total LJ potential energy is: ", potential_energy
+
+
+! Deallocate all we allocated 
 deallocate(coord)
 deallocate(mass)
+deallocate(distance)
 
 contains
 
@@ -51,11 +72,63 @@ subroutine read_molecule(input_file,Natoms,coord,mass)
                 print *, "Memory allocation failed"
                 stop
         end if
-        read(*,*)
+        open(unit=10, file=input_file, status="old", action="read")
+        read(10,*)
         do i=1,n
-                read(*,*) coord(i,1), coord(i,2), coord(i,3),mass(i)
+                read(10,*) coord(i,1), coord(i,2), coord(i,3),mass(i)
         end do
+        close(10)
 end subroutine read_molecule
+
+! Subroutine to allocate the distance matrix
+
+subroutine allocate_distance(Natoms, distance)
+    implicit none
+    integer, intent(in) :: Natoms
+    double precision, allocatable :: distance(:,:)
+    integer :: i_stat
+
+    allocate(distance(Natoms, Natoms), stat=i_stat)
+        if (i_stat /= 0) then
+            write(6,*) "Memory allocation for distance failed"
+            stop
+        end if
+end subroutine allocate_distance
+! Subroutine to compute the distances and the LJ potential energy
+
+subroutine compute_distance_potential(Natoms, coord, distance, sigma, epsilon, potential_energy)
+    implicit none
+    integer, intent(in) :: Natoms
+    double precision, intent(in) :: coord(Natoms, 3)
+    double precision, intent(in) :: sigma, epsilon
+    double precision, intent(out) :: distance(Natoms, Natoms)
+    double precision, intent(out) :: potential_energy
+    integer :: i, j
+    double precision :: r
+
+    ! Start Counter for V at 0
+    potential_energy = 0.0d0
+    do i=1, Natoms
+        do j = i+1, Natoms
+            r = sqrt(sum((coord(i,:) - coord(j,:))**2))
+            distance(i, j) = r
+            distance(j, i) = r
+            potential_energy = potential_energy + lj_potential(r, sigma, epsilon)
+        end do
+    end do
+end subroutine compute_distance_potential
+
+double precision function lj_potential(r, sigma, epsilon)
+    implicit none
+    double precision, intent(in) :: r, sigma, epsilon
+    lj_potential = 4.0d0 * epsilon * ((sigma/r)**12 - (sigma/r)**6)
+end function lj_potential
+    
+
+
+
+
+
 
 !
 END PROGRAM readfile
