@@ -14,7 +14,7 @@ These files must be in the same directory as the script
 matrixmultiplication.f95 (located in the scr directory).
 Once you have the script and the two input files you have to
 write in the script the name of the two input files in the variables
-input_file1 and input_file2.
+input_fileA and input_fileB.
 
 ##Compilation
 Run the commands:
