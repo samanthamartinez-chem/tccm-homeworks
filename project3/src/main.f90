@@ -17,7 +17,7 @@ double precision :: potential_energy, kinetic_energy, total_energy
 double precision, parameter :: epsilon = 0.0661d0 ! in j/mol
 double precision, parameter :: sigma = 0.3345d0 ! in nm
 double precision, parameter :: dt = 0.2d0
-character(len=100)::input_file
+character(len=100) :: input_file, output_file
 integer :: Natoms, step, num_steps
 
 ! **************************************************************************** !
@@ -48,6 +48,10 @@ if (num_steps .le. 0) then
     stop
 end if
 
+! Traj. how to save it, we ask the user:
+write(6, *) "Provide a name for the trajectory file, extension .xyz: "
+read(5, *) output_file
+
 !Call the function to determine the number of atoms
 Natoms=read_Natoms(input_file)
 
@@ -71,7 +75,7 @@ call allocate_acceleration(Natoms, acceleration_new)
 call compute_acc(Natoms, coord, mass, distance, acceleration, sigma, epsilon)
 
 
-open(unit=16, file='trajectory.xyz', status='replace', action='write')
+open(unit=16, file=output_file, status='replace', action='write')
 do step = 1, num_steps
     call position_update(Natoms, coord, velocity, acceleration, dt)
     call update_velocity_current(Natoms, velocity, acceleration, dt)
@@ -92,7 +96,7 @@ close(16)
 
 ! For the user if simulation finished successfully
 write(6, *) "Simulation completed successfully!"
-write(6, *) "Trajectory file saved as 'trajectory.xyz'."
+write(6, *) "Trajectory file saved as ", output_file
 
 ! Deallocate all we allocated 
 deallocate(coord)
