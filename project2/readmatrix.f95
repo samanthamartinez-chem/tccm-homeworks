@@ -19,7 +19,7 @@ beta=0.0d0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !Define the name of the file to read
-input_fileA="matrix_25_1p"
+input_fileA="matA"
 
 !Call the subroutine that gets the coordinates and the mass of the atoms
 call get_dimension(input_fileA,nA,mA,totvalA)
@@ -30,10 +30,10 @@ call dense_matrix(nA,mA,rowA,colA,valA,totvalA,denseA)
 !        write(*,*) denseA(i,1),denseA(i,2),denseA(i,3),denseA(i,4)
 !end do
 
-!input_fileB="matrix_25_5p"
-!call get_dimension(input_fileB,nB,mB,totvalB)
-!call read_matrix(input_fileB,totvalB,rowB,colB,valB)
-!call dense_matrix(nB,mB,rowB,colB,valB,totvalB,denseB)
+input_fileB="matB"
+call get_dimension(input_fileB,nB,mB,totvalB)
+call read_matrix(input_fileB,totvalB,rowB,colB,valB)
+call dense_matrix(nB,mB,rowB,colB,valB,totvalB,denseB)
 !write(*,*) 'B'
 !do i=1,25
 !        write(*,*) denseB(i,1),denseB(i,2),denseB(i,3),denseB(i,4)
@@ -61,19 +61,21 @@ call dense_matrix(nA,mA,rowA,colA,valA,totvalA,denseA)
 !        write(*,*) denseC(i,1),denseC(i,2),denseC(i,3),denseC(i,4)
 !end do
 
-!allocate(finalC(nA,mB))
-!call DGEMM('N','N',nA,mB,mA,alpha,denseA,nA,denseB,nB,beta,finalC,nA)
-!write(*,*) 'finalC'
-!do i=1,25
-!        write(*,*) finalC(i,1),finalC(i,2),finalC(i,3),finalC(i,4)
-!end do
+allocate(finalC(nA,mB))
+call DGEMM('T','T',nA,mB,mA,alpha,denseA,nA,denseB,nB,beta,finalC,nA)
+write(*,*) 'finalC'
+do i=1,4
+        write(*,*) finalC(i,1),finalC(i,2),finalC(i,3),finalC(i,4)
+end do
+
+write(*,*) finalC(1,1)
 
 deallocate(rowA)
 deallocate(colA)
 deallocate(valA)
-!deallocate(rowB)
-!deallocate(colB)
-!deallocate(valB)
+deallocate(rowB)
+deallocate(colB)
+deallocate(valB)
 !deallocate(rowR)
 !deallocate(colR)
 !deallocate(valR)
@@ -81,7 +83,7 @@ deallocate(valA)
 !deallocate(denseB)
 !deallocate(denseR)
 !deallocate(denseC)
-!deallocate(finalC)
+deallocate(finalC)
 
 contains
 
@@ -199,7 +201,7 @@ subroutine dense_matrix(n,m,row,col,val,totval,dense)
                         end do
                 end do
         end do
-        write(*,*) dense(5,10),dense(8,13),dense(18,25)
+        !write(*,*) dense(5,10),dense(8,13),dense(18,25)
         !do i=1,25
         !        write(*,*) dense(i,1),dense(i,2),dense(i,3),dense(i,4)
         !end do
