@@ -6,8 +6,8 @@ This directory contains the following:
 -A LICENSE file
 -An AUTHORS file
 -An INSTALL.md where the instructions to compile the program are described
--A tests directory containing some of the outputs obtained with our script and
-the matrices used in the project
+-A tests directory containing some of the outputs obtained with our script
+-A data directory with the matrices used in the project
 -A doc directory containing the report (in pdf) where the computational
 efficiency of the multiplication methods is discussed.
 -A scr directory that contains the source file of our program
