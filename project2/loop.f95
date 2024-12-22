@@ -60,7 +60,7 @@ write(*,*) 'The filling degree of B is ',fillB
 
 if (mA==nB) then
         call cpu_time(isparse)
-        do i=1,100
+        do i=1,1000
 		call multiply_sparse(rowA,colA,valA,totvalA,rowB,colB,valB,totvalB,rowR,colR,valR,totvalR,nmult)
         end do
 	call cpu_time(fsparse)
@@ -70,8 +70,10 @@ if (mA==nB) then
         write(*,*) 'The number of multiplications in sparse format is ',nmult,' in comparisson to the theoretical maximum ',nA**3
         write(*,*) 'The time taken for the sparse multiplication is ',tsparse,' seconds'
         call cpu_time(idense)
-        call multiply_dense(nA,mA,denseA,mB,denseB,nC,mC,denseC)
-        call cpu_time(fdense)
+        do i=1,1000
+		call multiply_dense(nA,mA,denseA,mB,denseB,nC,mC,denseC)
+        end do
+	call cpu_time(fdense)
         tdense=fdense-idense
         write(*,*) 'The time taken for the dense multiplication is ',tdense,' seconds'
         allocate(finalC(nA,mB))
