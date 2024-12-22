@@ -29,8 +29,9 @@ beta=0.0d0
 !In the subroutine read_matrix we use these values to save the values in 
 !three 1D arrays: rowA= row index, colA=column index and valA=value
 !Also, with the subroutine dense_matrix we write this matrix in dense format
+!In addition, we print the filling degree of the matrix
 
-input_fileA="matrix_25_1p"
+input_fileA="MATRIX_125_2p"
 call get_dimension(input_fileA,nA,mA,totvalA)
 call read_matrix(input_fileA,totvalA,rowA,colA,valA)
 call dense_matrix(nA,mA,rowA,colA,valA,totvalA,denseA)
@@ -39,7 +40,7 @@ write(*,*) 'The filling degree of A is ',fillA
 
 !We do the same to define the matrix B
 
-input_fileB="matrix_25_1p"
+input_fileB="MATRIX_125_1p"
 call get_dimension(input_fileB,nB,mB,totvalB)
 call read_matrix(input_fileB,totvalB,rowB,colB,valB)
 call dense_matrix(nB,mB,rowB,colB,valB,totvalB,denseB)
@@ -47,18 +48,22 @@ fillB=real(totvalB)/(real(nB)*real(mB))
 write(*,*) 'The filling degree of B is ',fillB
 
 !Now that we have the matrixA and matrixB in sparse and dense format we can
-!multiply them. First we check that the two matrixes can be multiply by
+!multiply them. First we check that the two matrixes can be multiplied by
 !checking that the mA(number of columns of A) is the same than nB(number of
 !rows of B). Then we multiply in sparse format with the subroutine
 !multiply_sparse. Then, we multiply them in dense format with the subroutine
 !multiply_dense and finally we multiply them in dense format using the
-!function BLAS
-!Also, the time 
+!function BLAS. Also, the time of each multiplication is recorded and printed
+!The filling degree of the resulting multiplied matrix is printed
+!Also, for the sparse multiplication, the number of multiplications in 
+!comparisson to the theoretical maximum is printed
 
 if (mA==nB) then
         call cpu_time(isparse)
-        call multiply_sparse(rowA,colA,valA,totvalA,rowB,colB,valB,totvalB,rowR,colR,valR,totvalR,nmult)
-        call cpu_time(fsparse)
+        do i=1,100
+		call multiply_sparse(rowA,colA,valA,totvalA,rowB,colB,valB,totvalB,rowR,colR,valR,totvalR,nmult)
+        end do
+	call cpu_time(fsparse)
         tsparse=fsparse-isparse
         fillR=real(totvalR)/(real(nA)*real(mB))
         write(*,*) 'The filling degree of the resulting matrix is ',fillR
@@ -86,9 +91,12 @@ deallocate(rowA,colA,valA,denseA)
 deallocate(rowB,colB,valB,denseB)
 deallocate(rowR,colR,valR)
 deallocate(denseC,finalC)
-!deallocate(denseC)
 
 contains
+
+!This subroutine gets the dimension of the matrix in sparse format. It opens the input file and
+!then it reads the dimension that is in the 5th line of the file and saves it in the variables
+!n(number of rows) and m(number of columns)
 
 subroutine get_dimension(input_file,n,m,totval)
         implicit none
@@ -112,12 +120,19 @@ subroutine get_dimension(input_file,n,m,totval)
 end subroutine get_dimension
 
 
+!This subroutine saves the values of the input file in three 1D arrays.
+!It starts saving the data from the 6th line of the file and saves the
+!first column as row(rows), the second as col(columns) and the third as
+!val(the values of the matrix).
+
 subroutine read_matrix(input_file,totval,row,col,val)
         implicit none
         character(len=100),intent(in)::input_file
         double precision,intent(out),allocatable::row(:),col(:),val(:)
         integer,intent(out) :: totval
+        double precision::temp
         integer :: i,i_stat
+
         allocate(row(totval),stat=i_stat)
         allocate(col(totval),stat=i_stat)
         allocate(val(totval),stat=i_stat)
@@ -137,13 +152,25 @@ subroutine read_matrix(input_file,totval,row,col,val)
         close(10)
         !do i=1,totval
         !        if (col(i)<row(i)) then
+        !                write(*,*) 'yes'
+        !                temp=row(i)
         !                row(i)=col(i)
-        !                col(i)=row(i)
+        !                col(i)=temp
         !        end if
         !end do        
         end subroutine read_matrix
         
-!
+
+!This subroutine multiplies the matrix in sparse format. For each i row index of matrix A it looks for
+!any row index of matrix B that is the same as the i column index of matrix A. Then, the values of 
+!matrix A and B that correspond to those indices are multiplied and saved in the same row index as 
+!the row index of matrix A and the same column index as the column index of matrix B. These values are
+!saved in three 1D arrays, rowR, colR and valR (row, column and values). 
+!Given that it is possible that more than one multiplication contributes to a certain row/column index,
+!there is also a loop that checks if there is already a value saved for a certain row/column value and
+!sum the multiplication to this value.
+!Finally, the total number of multiplications and the number of values different from zero are saved
+!in variables (nmult and totvalR respectively).
 
 subroutine multiply_sparse(rowA,colA,valA,totvalA,rowB,colB,valB,totvalB,rowR,colR,valR,totvalR,nmult)
         implicit none
@@ -156,9 +183,9 @@ subroutine multiply_sparse(rowA,colA,valA,totvalA,rowB,colB,valB,totvalB,rowR,co
         logical::same
         n=1
         nmult=0
-        allocate(rowR(totvalA+totvalB))
-        allocate(colR(totvalA+totvalB))
-        allocate(valR(totvalA+totvalB))
+        allocate(rowR((totvalA+totvalB)*2))
+        allocate(colR((totvalA+totvalB)*2))
+        allocate(valR((totvalA+totvalB)*2))
         do i=1,totvalA
                 do j=1,totvalB
                         if (colA(i)==rowB(j)) then
@@ -190,7 +217,12 @@ subroutine multiply_sparse(rowA,colA,valA,totvalA,rowB,colB,valB,totvalB,rowR,co
          end do
          totvalR=n-1
          end subroutine multiply_sparse
-         
+
+!This subroutine converts the sparse matrix into a dense format. It creates a 
+!matrix with the desired dimension and put every value as zero. Then it 
+!checks for the indexes of rows and columns that exist in the 1D vectors and
+!saves it values.
+
 subroutine dense_matrix(n,m,row,col,val,totval,dense)
         implicit none
         double precision,intent(in),allocatable::row(:),col(:),val(:)
@@ -210,6 +242,9 @@ subroutine dense_matrix(n,m,row,col,val,totval,dense)
                 end do
         end do
         end subroutine dense_matrix        
+
+!This subroutine multiply the matrices in dense format. It reads the matrix
+!in dense format and multiply the matrix A rows with the matrix B columns.
 
 subroutine multiply_dense(nA,mA,denseA,mB,denseB,nC,mC,denseC)
         implicit none        
