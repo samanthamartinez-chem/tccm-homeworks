@@ -64,7 +64,6 @@ if (mA==nB) then
         call cpu_time(fsparse)
         tsparse=fsparse-isparse
         fillR=real(totvalR)/(real(nA)*real(mB))
-        write(*,*) 'totvalR',totvalR
         write(*,*) 'The filling degree of the resulting matrix is ',fillR
         write(*,*) 'The number of multiplications in sparse format is ',nmult,' in comparisson to the theoretical maximum ',nA**3
         write(*,*) 'The time taken for the sparse multiplication is ',tsparse,' seconds'
