@@ -31,7 +31,7 @@ beta=0.0d0
 !Also, with the subroutine dense_matrix we write this matrix in dense format
 !In addition, we print the filling degree of the matrix
 
-input_fileA="matrix_25_5p"
+input_fileA="MATRIX_125_50p"
 call get_dimension(input_fileA,nA,mA,totvalA)
 call read_matrix(input_fileA,totvalA,rowA,colA,valA)
 call dense_matrix(nA,mA,rowA,colA,valA,totvalA,denseA)
@@ -40,7 +40,7 @@ write(*,*) 'The filling degree of A is ',fillA
 
 !We do the same to define the matrix B
 
-input_fileB="matrix_25_50p"
+input_fileB="MATRIX_125_5p"
 call get_dimension(input_fileB,nB,mB,totvalB)
 call read_matrix(input_fileB,totvalB,rowB,colB,valB)
 call dense_matrix(nB,mB,rowB,colB,valB,totvalB,denseB)

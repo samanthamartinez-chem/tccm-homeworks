@@ -1,0 +1,7 @@
+ The filling degree of A is    5.2544001489877701E-002
+ The filling degree of B is    4.7360002063214779E-003
+ The filling degree of the resulting matrix is    2.1056000143289566E-002
+ The number of multiplications in sparse format is          340  in comparisson to the theoretical maximum      1953125
+ The time taken for the sparse multiplication is    3.7399999999999933E-004  seconds
+ The time taken for the dense multiplication is    1.1068000000000001E-002  seconds
+ The time taken for the multiplication using BLAS is    1.6199999999999964E-003  seconds
